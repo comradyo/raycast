@@ -5,72 +5,7 @@ using namespace std;
 using namespace sf;
 
 #include <cmath>
-
-const float Pi = 3.14159f;
-const float dAngle = 0.05f;
-
-struct Angle
-{
-    Angle(float _value = 0.f) : value(_value){};
-    Angle &operator+=(const float &dValue)
-    {
-        value += dValue;
-        while (value > 2 * Pi)
-        {
-            value -= 2 * Pi;
-        }
-        while (value < 0)
-        {
-            value += 2 * Pi;
-        }
-        return *this;
-    }
-    Angle &operator-=(const float &dValue)
-    {
-        value -= dValue;
-        while (value > 2 * Pi)
-        {
-            value -= 2 * Pi;
-        }
-        while (value < 0)
-        {
-            value += 2 * Pi;
-        }
-        return *this;
-    }
-    operator float() const
-    {
-        return this->value;
-    }
-
-private:
-    float value;
-};
-
-struct Camera
-{
-    Camera(Vector2f pos, Vector2f dir) : position(pos), direction(dir){};
-    Vector2f position;
-    Vector2f direction;
-    void rotateLeft()
-    {
-        angle += dAngle;
-        this->rotate();
-    }
-    void rotateRight()
-    {
-        angle -= dAngle;
-        this->rotate();
-    }
-
-private:
-    Angle angle;
-    void rotate()
-    {
-        direction.x = direction.x * cos(angle) - direction.y * sin(angle);
-        direction.y = direction.x * sin(angle) + direction.y * cos(angle);
-    }
-};
+#include "engine.h"
 
 const int windowWidth = 400;
 const int windowHeight = 300;
@@ -98,7 +33,6 @@ int rectHeight = 10;
 int main()
 {
     RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "SFML works!");
-    Keyboard keyboard;
 
     int posX = 4;
     int posY = 4;
@@ -109,7 +43,7 @@ int main()
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
 
-    Camera camera(Vector2f(posX, posY), Vector2f(dirX, dirY));
+    Camera camera(Vector2D(posX, posY), Vector2D(dirX, dirY));
 
     while (window.isOpen())
     {

@@ -8,15 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic")
 
 #Чтобы не перечислять всё, можно написать "src/*.cpp"
-#set(LIB_SOURCE_FILES )
+set(LIB_SOURCE_FILES 
+    src/engine.cpp)
 
 # Что бы не было относительных ссылок на файлы
-#include_directories(include)
+include_directories(include)
 
-#add_library(study_std_lib STATIC ${LIB_SOURCE_FILES})
+add_library(engine_lib STATIC ${LIB_SOURCE_FILES})
 
 add_executable(prog src/main.cpp)
-#target_link_libraries(prog study_std_lib network ${USED_LIBS} Boost::log)
+target_link_libraries(prog engine_lib)
 
 find_package(SFML 2 COMPONENTS network audio graphics window system)
 if(SFML_FOUND)
