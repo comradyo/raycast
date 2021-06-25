@@ -5,6 +5,7 @@ using namespace sf;
 
 const float Pi = 3.14159f;
 const float dAngle = 0.05f;
+const float dStep = 0.1f;
 
 struct Vector2D
 {
@@ -37,7 +38,9 @@ struct Camera
     Vector2D direction;
     void rotateLeft();
     void rotateRight();
-
-private:
+    void moveForward();
+    void moveBackward();
     Angle angle;
+private:
+
 };

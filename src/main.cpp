@@ -37,8 +37,8 @@ int main()
     int posX = 4;
     int posY = 4;
 
-    int dirX = 5;
-    int dirY = 4;
+    int dirX = 2;
+    int dirY = 0;
 
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
@@ -52,8 +52,8 @@ int main()
         {
             switch (event.type)
             {
+            //Подстраивается под процессор
             case (Event::KeyPressed):
-                cout << camera.direction.x << " " << camera.direction.y << endl;
                 switch (event.key.code)
                 {
                 case (Keyboard::A):
@@ -61,6 +61,12 @@ int main()
                     break;
                 case (Keyboard::D):
                     camera.rotateRight();
+                    break;
+                case (Keyboard::W):
+                    camera.moveForward();
+                    break;
+                case (Keyboard::S):
+                    camera.moveBackward();
                     break;
                 default:
                     break;
@@ -73,6 +79,26 @@ int main()
                 break;
             }
         }
+
+        //Зависит от скорости процессора
+        /*
+        if (Keyboard::isKeyPressed(Keyboard::A))
+        {
+            camera.rotateLeft();
+        }
+        if (Keyboard::isKeyPressed(Keyboard::D))
+        {
+            camera.rotateRight();
+        }
+        if (Keyboard::isKeyPressed(Keyboard::W))
+        {
+            camera.moveForward();
+        }
+        if (Keyboard::isKeyPressed(Keyboard::S))
+        {
+            camera.moveBackward();
+        }
+        */
 
         window.clear();
 
@@ -93,9 +119,12 @@ int main()
                 window.draw(rect);
             }
         }
-
+        
         rect.setFillColor(Color::Green);
-        rect.setPosition(Vector2f(camera.direction.x * rectWidth, camera.direction.y * rectHeight));
+        rect.setPosition(Vector2f(camera.position.x * rectWidth, camera.position.y * rectHeight));
+        window.draw(rect);
+        rect.setFillColor(Color::Red);
+        rect.setPosition(Vector2f(camera.position.x * rectWidth + camera.direction.x * rectWidth, camera.position.y * rectHeight + camera.direction.y * rectHeight));
         window.draw(rect);
 
         window.display();

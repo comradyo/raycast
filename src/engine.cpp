@@ -1,10 +1,9 @@
 #include "engine.h"
-
 //==============================================================
 //Vector2D
 //==============================================================
 
-Vector2D::Vector2D(const float &_x, const float &_y) : x(_x), y(_y){};
+Vector2D::Vector2D(const float &_x, const float &_y) : x(_x), y(_y) {}
 
 Vector2D &Vector2D::operator=(const Vector2D &other)
 {
@@ -35,19 +34,21 @@ Vector2D &Vector2D::operator+=(const Vector2D &other)
 {
     this->x += other.x;
     this->y += other.y;
+    return *this;
 }
 
 Vector2D &Vector2D::operator-=(const Vector2D &other)
 {
     this->x -= other.x;
     this->y -= other.y;
+    return *this;
 }
 
 //==============================================================
 //Angle
 //==============================================================
 
-Angle::Angle(float _value = 0.f) : value(_value){};
+Angle::Angle(float _value = 0.f) : value(_value) {}
 
 Angle &Angle::operator+=(const float &dValue)
 {
@@ -86,16 +87,32 @@ Angle::operator float() const
 //Camera
 //==============================================================
 
-Camera::Camera(Vector2D pos, Vector2D dir) : position(pos), direction(dir){};
+Camera::Camera(Vector2D pos, Vector2D dir) : position(pos), direction(dir) {}
 
+//Возможно, все знаки придётся поменять
 void Camera::rotateLeft()
 {
-    angle += dAngle;
-    direction.rotateToAngle(angle);
+    angle -= dAngle;
+    direction.rotateToAngle(-dAngle);
 }
 
+//Возможно, все знаки придётся поменять
 void Camera::rotateRight()
 {
-    angle -= dAngle;
-    direction.rotateToAngle(angle);
+    angle += dAngle;
+    direction.rotateToAngle(dAngle);
+}
+
+//Возможно, придётся поменять sin на cos и наоборот
+void Camera::moveForward()
+{
+    position.x += dStep * cos(angle);
+    position.y += dStep * sin(angle);
+}
+
+//Возможно, придётся поменять sin на cos и наоборот
+void Camera::moveBackward()
+{
+    position.x -= dStep * cos(angle);
+    position.y -= dStep * sin(angle);
 }
