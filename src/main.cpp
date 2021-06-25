@@ -6,12 +6,7 @@ using namespace sf;
 
 #include <cmath>
 #include "engine.h"
-
-const int windowWidth = 400;
-const int windowHeight = 300;
-
-const int worldWidth = 10;
-const int worldHeight = 10;
+#include "configurations.cpp"
 
 char world[worldWidth][worldHeight] =
     {
@@ -27,8 +22,44 @@ char world[worldWidth][worldHeight] =
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-int rectWidth = 10;
-int rectHeight = 10;
+void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
+{
+    for (int i = 0; i < worldWidth; ++i)
+    {
+        for (int j = 0; j < worldHeight; ++j)
+        {
+            rect.setPosition(Vector2f(i * rectWidth, j * rectHeight));
+            switch (world[i][j])
+            {
+            case 1:
+                rect.setFillColor(Color::Cyan);
+                break;
+            default:
+                rect.setFillColor(Color::Magenta);
+                break;
+            }
+            window.draw(rect);
+        }
+    }
+
+    Vector2f _position(camera.position.x * rectWidth, camera.position.y * rectHeight);
+    Vector2f _direction(camera.direction.x * rectWidth, camera.direction.y * rectHeight);
+    Vector2f _plane(camera.plane.x * rectWidth, camera.plane.y * rectHeight);
+
+    rect.setFillColor(Color::Green);
+    rect.setPosition(_position);
+    window.draw(rect);
+
+    rect.setFillColor(Color::Red);
+    rect.setPosition(_position + _direction);
+    window.draw(rect);
+
+    rect.setFillColor(Color::Blue);
+    rect.setPosition(_position + _direction + _plane);
+    window.draw(rect);
+    rect.setPosition(_position + _direction - _plane);
+    window.draw(rect);
+}
 
 int main()
 {
@@ -40,10 +71,13 @@ int main()
     int dirX = 2;
     int dirY = 0;
 
+    int plX = 0;
+    int plY = -1;
+
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
 
-    Camera camera(Vector2D(posX, posY), Vector2D(dirX, dirY));
+    Camera camera(Vector2D(posX, posY), Vector2D(dirX, dirY), Vector2D(plX, plY));
 
     while (window.isOpen())
     {
@@ -102,30 +136,7 @@ int main()
 
         window.clear();
 
-        for (int i = 0; i < worldWidth; ++i)
-        {
-            for (int j = 0; j < worldHeight; ++j)
-            {
-                rect.setPosition(Vector2f(i * rectWidth, j * rectHeight));
-                switch (world[i][j])
-                {
-                case 1:
-                    rect.setFillColor(Color::Cyan);
-                    break;
-                default:
-                    rect.setFillColor(Color::Magenta);
-                    break;
-                }
-                window.draw(rect);
-            }
-        }
-        
-        rect.setFillColor(Color::Green);
-        rect.setPosition(Vector2f(camera.position.x * rectWidth, camera.position.y * rectHeight));
-        window.draw(rect);
-        rect.setFillColor(Color::Red);
-        rect.setPosition(Vector2f(camera.position.x * rectWidth + camera.direction.x * rectWidth, camera.position.y * rectHeight + camera.direction.y * rectHeight));
-        window.draw(rect);
+        drawMap(camera, rect, window);
 
         window.display();
     }

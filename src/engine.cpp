@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "configurations.cpp"
 //==============================================================
 //Vector2D
 //==============================================================
@@ -87,13 +88,14 @@ Angle::operator float() const
 //Camera
 //==============================================================
 
-Camera::Camera(Vector2D pos, Vector2D dir) : position(pos), direction(dir) {}
+Camera::Camera(Vector2D pos, Vector2D dir, Vector2D pl) : position(pos), direction(dir), plane(pl) {}
 
 //Возможно, все знаки придётся поменять
 void Camera::rotateLeft()
 {
     angle -= dAngle;
     direction.rotateToAngle(-dAngle);
+    plane.rotateToAngle(-dAngle);
 }
 
 //Возможно, все знаки придётся поменять
@@ -101,6 +103,7 @@ void Camera::rotateRight()
 {
     angle += dAngle;
     direction.rotateToAngle(dAngle);
+    plane.rotateToAngle(dAngle);
 }
 
 //Возможно, придётся поменять sin на cos и наоборот

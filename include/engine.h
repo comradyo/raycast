@@ -3,10 +3,6 @@ using namespace sf;
 
 #include <cmath>
 
-const float Pi = 3.14159f;
-const float dAngle = 0.05f;
-const float dStep = 0.1f;
-
 struct Vector2D
 {
     Vector2D(const float &_x, const float &_y);
@@ -33,9 +29,10 @@ private:
 
 struct Camera
 {
-    Camera(Vector2D pos, Vector2D dir);
+    Camera(Vector2D pos, Vector2D dir, Vector2D pl);
     Vector2D position;
     Vector2D direction;
+    Vector2D plane;
     void rotateLeft();
     void rotateRight();
     void moveForward();
