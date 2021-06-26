@@ -8,10 +8,13 @@ struct Vector2D
     Vector2D(const float &_x, const float &_y);
     Vector2D &operator=(const Vector2D &other);
     void rotateToAngle(const float &angle);
-    Vector2D operator+(const Vector2D &other);
-    Vector2D operator-(const Vector2D &other);
+    Vector2D operator-();
+    friend const Vector2D operator+(const Vector2D &first, const Vector2D &second);
+    friend const Vector2D operator-(const Vector2D &first, const Vector2D &second);
     Vector2D operator*(const float &value);
     Vector2D operator/(const float &value);
+    friend const Vector2D operator*(const Vector2D &first, const float &value);
+    friend const Vector2D operator/(const Vector2D &first, const float &value);
     Vector2D &operator+=(const Vector2D &other);
     Vector2D &operator-=(const Vector2D &other);
     float length() const;

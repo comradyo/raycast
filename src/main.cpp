@@ -12,7 +12,7 @@ char world[worldWidth][worldHeight] =
     {
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
         {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -59,36 +59,65 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
     window.draw(rect);
     rect.setPosition(_position + _direction - _plane);
     window.draw(rect);
+
+    Vector2D deltaPlane = (camera.plane * 2) / windowWidth;
+    Vector2D rayStartVector = camera.position + camera.direction + camera.plane;
+
+    rect.setSize(Vector2f(1, 1));
+    rect.setFillColor(Color::Red);
+
+    for (int i = 0; i < windowWidth; ++i)
+    {
+        Vector2D rayVector = rayStartVector;
+        Vector2D dRay = (rayStartVector - camera.position) / 10.f;
+
+        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && rayVector.length() < 50)
+        {
+            rect.setFillColor(Color(rayVector.length() * 100, 0, 225));
+            rect.setPosition(rayVector.x * rectWidth, rayVector.y * rectHeight);
+            window.draw(rect);
+            rayVector += dRay;
+        }
+
+        rayStartVector -= deltaPlane;
+    }
+
+    rect.setSize(Vector2f(rectWidth, rectHeight));
 }
 
-void drawWals(Camera &camera, RenderWindow& window)
+void drawWals(Camera &camera, RenderWindow &window)
 {
+    //Вектор, который будет прибавляться к текущему вектору плоскости
     Vector2D deltaPlane = (camera.plane * 2) / windowWidth;
-    Vector2D planeVector = camera.plane;
+    //С какой позиции стартует луч
+    Vector2D rayStartVector = camera.position + camera.direction + camera.plane;
 
     Vertex line[2];
 
     for (int i = 0; i < windowWidth; ++i)
     {
-        line[0].position = Vector2f(i, 100.f);
-        line[0].color = Color::Cyan;
 
-        Vector2D rayVector = camera.position + planeVector;
+        Vector2D rayVector = rayStartVector;
+        Vector2D dRay = (rayStartVector - camera.position) / 10.f;
 
-        Vector2D dRay = rayVector - camera.position;
-
-        while (world[int(rayVector.x)][int(rayVector.y)] != 1 && rayVector.length() < 5)
+        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && rayVector.length() < 50)
         {
             rayVector += dRay;
         }
 
-        line[1].position = Vector2f(i, rayVector.length() * 10);
+        line[0].position = Vector2f(i, windowHeight / 2 + 200 / rayVector.length());
+        line[0].color = Color::Cyan;
+        line[1].position = Vector2f(i, windowHeight / 2 - 200 / rayVector.length());
         line[1].color = Color::Magenta;
 
         window.draw(line, 2, sf::Lines);
 
-        rayVector += deltaPlane;
+        rayStartVector -= deltaPlane;
     }
+}
+
+void draw(Camera &camera, RenderWindow &window)
+{
 }
 
 int main()

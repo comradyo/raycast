@@ -21,14 +21,19 @@ void Vector2D::rotateToAngle(const float &angle)
     y = _x * sin(angle) + _y * cos(angle);
 }
 
-Vector2D Vector2D::operator+(const Vector2D &other)
+Vector2D Vector2D::operator-()
 {
-    return Vector2D(this->x + other.x, this->y + other.y);
+    return Vector2D(-this->x, -this->y);
 }
 
-Vector2D Vector2D::operator-(const Vector2D &other)
+const Vector2D operator+(const Vector2D &first, const Vector2D &second)
 {
-    return Vector2D(this->x - other.x, this->y - other.y);
+    return Vector2D(first.x + second.x, first.y + second.y);
+}
+
+const Vector2D operator-(const Vector2D &first, const Vector2D &second)
+{
+    return Vector2D(first.x - second.x, first.y - second.y);
 }
 
 Vector2D Vector2D::operator*(const float &value)
@@ -39,6 +44,16 @@ Vector2D Vector2D::operator*(const float &value)
 Vector2D Vector2D::operator/(const float &value)
 {
     return Vector2D(this->x / value, this->y / value);
+}
+
+const Vector2D operator*(const Vector2D &vec2D, const float &value)
+{
+    return Vector2D(vec2D.x * value, vec2D.y * value);
+}
+
+const Vector2D operator/(const Vector2D &vec2D, const float &value)
+{
+    return Vector2D(vec2D.x / value, vec2D.y / value);
 }
 
 Vector2D &Vector2D::operator+=(const Vector2D &other)
