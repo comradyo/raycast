@@ -6,12 +6,15 @@ using namespace sf;
 struct Vector2D
 {
     Vector2D(const float &_x, const float &_y);
-    Vector2D& operator=(const Vector2D& other);
+    Vector2D &operator=(const Vector2D &other);
     void rotateToAngle(const float &angle);
     Vector2D operator+(const Vector2D &other);
     Vector2D operator-(const Vector2D &other);
+    Vector2D operator*(const float &value);
+    Vector2D operator/(const float &value);
     Vector2D &operator+=(const Vector2D &other);
     Vector2D &operator-=(const Vector2D &other);
+    float length() const;
     float x;
     float y;
 };
@@ -38,6 +41,6 @@ struct Camera
     void moveForward();
     void moveBackward();
     Angle angle;
-private:
 
+private:
 };

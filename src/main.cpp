@@ -61,6 +61,36 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
     window.draw(rect);
 }
 
+void drawWals(Camera &camera, RenderWindow& window)
+{
+    Vector2D deltaPlane = (camera.plane * 2) / windowWidth;
+    Vector2D planeVector = camera.plane;
+
+    Vertex line[2];
+
+    for (int i = 0; i < windowWidth; ++i)
+    {
+        line[0].position = Vector2f(i, 100.f);
+        line[0].color = Color::Cyan;
+
+        Vector2D rayVector = camera.position + planeVector;
+
+        Vector2D dRay = rayVector - camera.position;
+
+        while (world[int(rayVector.x)][int(rayVector.y)] != 1 && rayVector.length() < 5)
+        {
+            rayVector += dRay;
+        }
+
+        line[1].position = Vector2f(i, rayVector.length() * 10);
+        line[1].color = Color::Magenta;
+
+        window.draw(line, 2, sf::Lines);
+
+        rayVector += deltaPlane;
+    }
+}
+
 int main()
 {
     RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "SFML works!");
@@ -72,7 +102,7 @@ int main()
     int dirY = 0;
 
     int plX = 0;
-    int plY = -1;
+    int plY = -2;
 
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
@@ -114,28 +144,9 @@ int main()
             }
         }
 
-        //Зависит от скорости процессора
-        /*
-        if (Keyboard::isKeyPressed(Keyboard::A))
-        {
-            camera.rotateLeft();
-        }
-        if (Keyboard::isKeyPressed(Keyboard::D))
-        {
-            camera.rotateRight();
-        }
-        if (Keyboard::isKeyPressed(Keyboard::W))
-        {
-            camera.moveForward();
-        }
-        if (Keyboard::isKeyPressed(Keyboard::S))
-        {
-            camera.moveBackward();
-        }
-        */
-
         window.clear();
 
+        drawWals(camera, window);
         drawMap(camera, rect, window);
 
         window.display();
