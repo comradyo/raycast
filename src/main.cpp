@@ -94,6 +94,44 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
     rect.setSize(Vector2f(rectWidth, rectHeight));
 }
 
+void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
+{
+    Vertex line[2];
+    for (int i = 0; i < windowWidth; ++i)
+    {
+        float cameraX = -(2 * i / double(windowWidth) - 1);
+        Vector2D rayDir = camera.direction + camera.plane * cameraX;
+        //Vector2D dRay = (rayDir / 20.f);
+        Vector2D dRay = rayDir / 10.f;
+
+        for (int j = windowHeight; j > windowHeight / 2; --j)
+        {
+            int mapX = int(camera.position.x + rayDir.x);
+            int mapY = int(camera.position.y + rayDir.y);
+            if (world[mapX][mapY] == 1)
+            {
+                line[0].position = Vector2f(i, j);
+                line[0].color = Color::Cyan;
+                line[1].position = Vector2f(i, windowHeight - j);
+                line[1].color = Color::Magenta;
+                window.draw(line, 2, sf::Lines);
+                j = windowHeight / 2;
+            }
+            else if (mapX % 2 == 0 && mapY % 2 == 0)
+            {
+                rect.setFillColor(Color::Cyan);
+            }
+            else
+            {
+                rect.setFillColor(Color::Blue);
+            }
+            rect.setPosition(i, j);
+            window.draw(rect);
+            rayDir += dRay;
+        }
+    }
+}
+
 void drawWals(Camera &camera, RenderWindow &window)
 {
     Vertex line[2];
@@ -221,6 +259,9 @@ int main()
 
     Camera camera(Vector2D(posX, posY), Vector2D(dirX, dirY), Vector2D(plX, plY));
 
+    RectangleShape rectForFloor;
+    rectForFloor.setSize(Vector2f(1, 1));
+
     while (window.isOpen())
     {
         Event event;
@@ -258,7 +299,8 @@ int main()
 
         window.clear();
 
-        drawWals(camera, window);
+        //drawWals(camera, window);
+        drawFloor(camera, window, rectForFloor);
         drawMap(camera, rect, window);
 
         window.display();
