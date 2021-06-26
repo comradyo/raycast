@@ -8,19 +8,28 @@ using namespace sf;
 #include "engine.h"
 #include "configurations.cpp"
 
-char world[worldWidth][worldHeight] =
+char world[worldWidth][worldHeight];
+
+void setWorld()
+{
+    for (int i = 0; i < worldWidth; ++i)
     {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
+        for (int j = 0; j < worldHeight; ++j)
+        {
+            if (i == 0 || i == worldWidth - 1 || j == 0 || j == worldHeight - 1)
+            {
+                world[i][j] = 1;
+            }
+            else
+            {
+                world[i][j] = 0;
+            }
+        }
+    }
+    world[2][2] = 1;
+    world[2][3] = 1;
+    world[3][2] = 1;
+}
 
 void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
 {
@@ -87,32 +96,104 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
 
 void drawWals(Camera &camera, RenderWindow &window)
 {
-    //Вектор, который будет прибавляться к текущему вектору плоскости
-    Vector2D deltaPlane = (camera.plane * 2) / windowWidth;
-    //С какой позиции стартует луч
-    Vector2D rayStartVector = camera.position + camera.direction + camera.plane;
-
     Vertex line[2];
 
     for (int i = 0; i < windowWidth; ++i)
     {
+        //cameraX - коэффициент вектора плоскости экрана, находится в диапозоне от [1, -1]
+        float cameraX = -(2 * i / double(windowWidth) - 1);
+        //Направление луча
+        Vector2D rayDir = camera.direction + camera.plane * cameraX;
 
-        Vector2D rayVector = rayStartVector;
-        Vector2D dRay = (rayStartVector - camera.position) / 10.f;
+        int mapX = int(camera.position.x);
+        int mapY = int(camera.position.y);
 
-        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && (rayVector - rayStartVector).length() < 50)
+        //Расстояния до первой встречной координаты X и Y соответственно
+        float sideDistX;
+        float sideDistY;
+
+        //Расстояния, которые луч проходит, чтобы перейти к следующим координатам X и Y соответственно
+        //(По сути, должно быть abs(rayDir.length()/rayDir.x)), но нам эта длина не важна
+        float deltaDistX = (rayDir.y == 0) ? 0 : ((rayDir.x == 0) ? 1 : abs(1 / rayDir.x));
+        float deltaDistY = (rayDir.x == 0) ? 0 : ((rayDir.y == 0) ? 1 : abs(1 / rayDir.y));
+        float perpWallDist;
+
+        int stepX;
+        int stepY;
+
+        bool hit = false;
+        int side;
+
+        if (rayDir.x < 0)
         {
-            rayVector += dRay;
+            stepX = -1;
+            sideDistX = (camera.position.x - mapX) * deltaDistX;
+        }
+        else
+        {
+            stepX = 1;
+            sideDistX = (mapX + 1.0 - camera.position.x) * deltaDistX;
+        }
+        if (rayDir.y < 0)
+        {
+            stepY = -1;
+            sideDistY = (camera.position.y - mapY) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = (mapY + 1.0 - camera.position.y) * deltaDistY;
         }
 
-        line[0].position = Vector2f(i, windowHeight / 2 + 200 / (rayVector - rayStartVector).length());
+        while (!hit)
+        {
+            if (sideDistX < sideDistY)
+            {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            }
+            else
+            {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+            if (world[mapX][mapY] > 0)
+            {
+                hit = true;
+            }
+        }
+
+        //Нужно для устранения эффекта рыбьего глаза, хз, как работает
+        if (side == 0)
+        {
+            perpWallDist = (mapX - camera.position.x + (1 - stepX) / 2) / rayDir.x;
+        }
+        else
+        {
+            perpWallDist = (mapY - camera.position.y + (1 - stepY) / 2) / rayDir.y;
+        }
+
+        int lineHeight = (int)(windowHeight / perpWallDist);
+
+        int drawStart = -lineHeight / 2 + windowHeight / 2;
+        if (drawStart < 0)
+        {
+            drawStart = 0;
+        }
+        int drawEnd = lineHeight / 2 + windowHeight / 2;
+        if (drawStart > windowHeight)
+        {
+            drawEnd = windowHeight - 1;
+        }
+
+        line[0].position = Vector2f(i, drawStart);
         line[0].color = Color::Cyan;
-        line[1].position = Vector2f(i, windowHeight / 2 - 200 / (rayVector - rayStartVector).length());
+        line[1].position = Vector2f(i, drawEnd);
         line[1].color = Color::Magenta;
 
         window.draw(line, 2, sf::Lines);
-
-        rayStartVector -= deltaPlane;
     }
 }
 
@@ -124,14 +205,16 @@ int main()
 {
     RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "SFML works!");
 
+    setWorld();
+
     int posX = 4;
     int posY = 4;
 
-    int dirX = 2;
-    int dirY = 0;
+    float dirX = 0.5f;
+    float dirY = 0;
 
-    int plX = 0;
-    int plY = -2;
+    float plX = 0;
+    float plY = -0.3f;
 
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
