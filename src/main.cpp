@@ -71,9 +71,9 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
         Vector2D rayVector = rayStartVector;
         Vector2D dRay = (rayStartVector - camera.position) / 10.f;
 
-        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && rayVector.length() < 50)
+        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && (rayVector - rayStartVector).length() < 50)
         {
-            rect.setFillColor(Color(rayVector.length() * 100, 0, 225));
+            rect.setFillColor(Color((rayVector - rayStartVector).length() * 100, 0, 225));
             rect.setPosition(rayVector.x * rectWidth, rayVector.y * rectHeight);
             window.draw(rect);
             rayVector += dRay;
@@ -100,14 +100,14 @@ void drawWals(Camera &camera, RenderWindow &window)
         Vector2D rayVector = rayStartVector;
         Vector2D dRay = (rayStartVector - camera.position) / 10.f;
 
-        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && rayVector.length() < 50)
+        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && (rayVector - rayStartVector).length() < 50)
         {
             rayVector += dRay;
         }
 
-        line[0].position = Vector2f(i, windowHeight / 2 + 200 / rayVector.length());
+        line[0].position = Vector2f(i, windowHeight / 2 + 200 / (rayVector - rayStartVector).length());
         line[0].color = Color::Cyan;
-        line[1].position = Vector2f(i, windowHeight / 2 - 200 / rayVector.length());
+        line[1].position = Vector2f(i, windowHeight / 2 - 200 / (rayVector - rayStartVector).length());
         line[1].color = Color::Magenta;
 
         window.draw(line, 2, sf::Lines);
