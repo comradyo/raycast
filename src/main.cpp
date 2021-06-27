@@ -94,6 +94,7 @@ void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
     rect.setSize(Vector2f(rectWidth, rectHeight));
 }
 
+/*
 void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
 {
     Vertex line[2];
@@ -106,6 +107,9 @@ void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
 
         for (int j = windowHeight; j > windowHeight / 2; --j)
         {
+            rect.setFillColor(Color((rayDir).length() * 100, 0, 225));
+            rect.setPosition((camera.position.x + rayDir.x) * rectWidth, (camera.position.y + rayDir.y) * rectHeight);
+            window.draw(rect);
             int mapX = int(camera.position.x + rayDir.x);
             int mapY = int(camera.position.y + rayDir.y);
             if (world[mapX][mapY] == 1)
@@ -125,9 +129,50 @@ void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
             {
                 rect.setFillColor(Color::Blue);
             }
+            //rect.setPosition(i, j);
+            //window.draw(rect);
+            rayDir += dRay;
+        }
+    }
+}*/
+
+void floorCast(Camera &camera, RenderWindow &window, RectangleShape &rect)
+{
+    for (int j = windowHeight; j > windowHeight/2; --j)
+    {
+        float rayDirX0 = camera.direction.x + camera.plane.x;
+        float rayDirY0 = camera.direction.y + camera.plane.y;
+        float rayDirX1 = camera.direction.x - camera.plane.x;
+        float rayDirY1 = camera.direction.y - camera.plane.y;
+
+        int p = j - windowHeight / 2;
+
+        float posZ = 0.5 * windowHeight;
+        float rowDistance = posZ / p;
+
+        float floorStepX = rowDistance * (rayDirX1 - rayDirX0) / windowWidth;
+        float floorStepY = rowDistance * (rayDirY1 - rayDirY0) / windowHeight;
+
+        float floorX = camera.position.x + rowDistance * rayDirX0;
+        float floorY = camera.position.y + rowDistance * rayDirY0;
+
+        for (int i = 0; i < windowWidth; ++i)
+        {
+            floorX += floorStepX;
+            floorY += floorStepY;
+
+            // floor
+            if (int(floorX) % 2 == 0 && int(floorY) % 2 == 0)
+            {
+                rect.setFillColor(Color::Cyan);
+            }
+            else
+            {
+                rect.setFillColor(Color::White);
+            }
+
             rect.setPosition(i, j);
             window.draw(rect);
-            rayDir += dRay;
         }
     }
 }
@@ -300,8 +345,8 @@ int main()
         window.clear();
 
         //drawWals(camera, window);
-        drawFloor(camera, window, rectForFloor);
-        drawMap(camera, rect, window);
+        floorCast(camera, window, rectForFloor);
+        //drawMap(camera, rect, window);
 
         window.display();
     }
