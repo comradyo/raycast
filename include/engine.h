@@ -44,6 +44,7 @@ struct Camera
     void moveForward();
     void moveBackward();
     Angle angle;
+    float z;
 
 private:
 };

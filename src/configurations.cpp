@@ -10,8 +10,8 @@ const int windowWidth = 640;
 const int windowHeight = 360;
 
 
-const int worldWidth = 10;
-const int worldHeight = 10;
+const int worldWidth = 20;
+const int worldHeight = 20;
 
 const int rectWidth = 10;
 const int rectHeight = 10;

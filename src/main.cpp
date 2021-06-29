@@ -9,6 +9,7 @@ using namespace sf;
 #include "configurations.cpp"
 
 char world[worldWidth][worldHeight];
+const float deltaScreenZ = 1.f / windowHeight;
 
 void setWorld()
 {
@@ -31,70 +32,47 @@ void setWorld()
     world[3][2] = 1;
 }
 
+//Отрисовка карты, сейчас удалю, потом надо восстановить
 void drawMap(const Camera &camera, RectangleShape &rect, RenderWindow &window)
 {
-    for (int i = 0; i < worldWidth; ++i)
-    {
-        for (int j = 0; j < worldHeight; ++j)
-        {
-            rect.setPosition(Vector2f(i * rectWidth, j * rectHeight));
-            switch (world[i][j])
-            {
-            case 1:
-                rect.setFillColor(Color::Cyan);
-                break;
-            default:
-                rect.setFillColor(Color::Magenta);
-                break;
-            }
-            window.draw(rect);
-        }
-    }
-
-    Vector2f _position(camera.position.x * rectWidth, camera.position.y * rectHeight);
-    Vector2f _direction(camera.direction.x * rectWidth, camera.direction.y * rectHeight);
-    Vector2f _plane(camera.plane.x * rectWidth, camera.plane.y * rectHeight);
-
+    rect.setSize(Vector2f(1, 1));
     rect.setFillColor(Color::Green);
-    rect.setPosition(_position);
+    rect.setPosition(camera.position.x * rectWidth, camera.position.y * rectHeight);
     window.draw(rect);
 
-    rect.setFillColor(Color::Red);
-    rect.setPosition(_position + _direction);
+    rect.setFillColor(Color::Yellow);
+    rect.setPosition((camera.position.x + camera.direction.x) * rectWidth, (camera.position.y + camera.direction.y) * rectHeight);
     window.draw(rect);
-
-    rect.setFillColor(Color::Blue);
-    rect.setPosition(_position + _direction + _plane);
-    window.draw(rect);
-    rect.setPosition(_position + _direction - _plane);
-    window.draw(rect);
-
-    Vector2D deltaPlane = (camera.plane * 2) / windowWidth;
-    Vector2D rayStartVector = camera.position + camera.direction + camera.plane;
 
     rect.setSize(Vector2f(1, 1));
     rect.setFillColor(Color::Red);
 
     for (int i = 0; i < windowWidth; ++i)
     {
-        Vector2D rayVector = rayStartVector;
-        Vector2D dRay = (rayStartVector - camera.position) / 10.f;
+        float cameraX = -(2 * i / double(windowWidth) - 1);
+        Vector2D rayDir = camera.direction + camera.plane * cameraX;
+        Vector2D dRay = rayDir;
+        Vector2D ray = camera.position + rayDir;
 
-        while (world[int(rayVector.x)][int(rayVector.y)] == 0 && (rayVector - rayStartVector).length() < 50)
+        float screenZ = 0.0f;
+        rect.setFillColor(Color(200, 100, 196));
+        for (int j = windowHeight; j > windowHeight / 2 - 1; --j)
         {
-            rect.setFillColor(Color((rayVector - rayStartVector).length() * 100, 0, 225));
-            rect.setPosition(rayVector.x * rectWidth, rayVector.y * rectHeight);
+            float maxLength = screenZ * rayDir.length() / (camera.z - screenZ);
+            while ((ray - camera.position).length() < maxLength)
+            {
+                ray += dRay;
+            }
+            rect.setPosition(ray.x * rectWidth, ray.y * rectHeight);
             window.draw(rect);
-            rayVector += dRay;
+            screenZ += deltaScreenZ;
         }
-
-        rayStartVector -= deltaPlane;
     }
 
     rect.setSize(Vector2f(rectWidth, rectHeight));
 }
 
-/*
+//Хороший эффект для Cursed Spaces, но сейчас удалю
 void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
 {
     Vertex line[2];
@@ -103,10 +81,11 @@ void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
         float cameraX = -(2 * i / double(windowWidth) - 1);
         Vector2D rayDir = camera.direction + camera.plane * cameraX;
         //Vector2D dRay = (rayDir / 20.f);
-        Vector2D dRay = rayDir / 10.f;
 
         for (int j = windowHeight; j > windowHeight / 2; --j)
         {
+            Vector2D dRay = rayDir * 5.f / j;
+            //Vector2D dRay = rayDir * (windowHeight - j) / (0.5f - windowHeight + j);
             rect.setFillColor(Color((rayDir).length() * 100, 0, 225));
             rect.setPosition((camera.position.x + rayDir.x) * rectWidth, (camera.position.y + rayDir.y) * rectHeight);
             window.draw(rect);
@@ -129,40 +108,50 @@ void drawFloor(Camera &camera, RenderWindow &window, RectangleShape &rect)
             {
                 rect.setFillColor(Color::Blue);
             }
-            //rect.setPosition(i, j);
-            //window.draw(rect);
+            rect.setPosition(i, j);
+            window.draw(rect);
             rayDir += dRay;
         }
     }
-}*/
+}
 
 void floorCast(Camera &camera, RenderWindow &window, RectangleShape &rect)
 {
-    for (int j = windowHeight; j > windowHeight/2; --j)
+    RectangleShape line;
+    for (int i = 0; i < windowWidth; ++i)
     {
-        float rayDirX0 = camera.direction.x + camera.plane.x;
-        float rayDirY0 = camera.direction.y + camera.plane.y;
-        float rayDirX1 = camera.direction.x - camera.plane.x;
-        float rayDirY1 = camera.direction.y - camera.plane.y;
+        float cameraX = -(2 * i / double(windowWidth) - 1);
+        Vector2D rayDir = camera.direction + camera.plane * cameraX;
+        Vector2D dRay = rayDir / 10.f;
+        Vector2D ray = camera.position + rayDir;
 
-        int p = j - windowHeight / 2;
-
-        float posZ = 0.5 * windowHeight;
-        float rowDistance = posZ / p;
-
-        float floorStepX = rowDistance * (rayDirX1 - rayDirX0) / windowWidth;
-        float floorStepY = rowDistance * (rayDirY1 - rayDirY0) / windowHeight;
-
-        float floorX = camera.position.x + rowDistance * rayDirX0;
-        float floorY = camera.position.y + rowDistance * rayDirY0;
-
-        for (int i = 0; i < windowWidth; ++i)
+        float screenZ = 0.0f;
+        for (int j = windowHeight; j > windowHeight / 2; --j)
         {
-            floorX += floorStepX;
-            floorY += floorStepY;
-
-            // floor
-            if (int(floorX) % 2 == 0 && int(floorY) % 2 == 0)
+            float maxLength = screenZ * rayDir.length() / (camera.z - screenZ);
+            while ((ray - camera.position).length() < maxLength && world[int(ray.x)][int(ray.y)] == 0)
+            {
+                ray += dRay;
+            }
+            //Чтобы не отрисовывать то, что находится за стенами, для бесконечной плоскости неактуально
+            if(world[int(ray.x)][int(ray.y)] != 0)
+            {
+                break;
+            }
+            //WallCast, надо доделать потом
+            /*
+            if (world[int(ray.x)][int(ray.y)] != 0)
+            {
+                line.setFillColor(Color::Blue);
+                float wallSize = dRay.length() * windowHeight / ray.length();
+                cout<<wallSize<<endl;
+                line.setSize(Vector2f(1, wallSize));
+                line.setPosition(i, j - wallSize);
+                window.draw(line);
+                j = windowHeight / 2;
+            }
+            */
+            if (int(ray.x) % 2 == 0 && int(ray.y) % 2 == 0)
             {
                 rect.setFillColor(Color::Cyan);
             }
@@ -173,6 +162,7 @@ void floorCast(Camera &camera, RenderWindow &window, RectangleShape &rect)
 
             rect.setPosition(i, j);
             window.draw(rect);
+            screenZ += deltaScreenZ;
         }
     }
 }
@@ -280,29 +270,26 @@ void drawWals(Camera &camera, RenderWindow &window)
     }
 }
 
-void draw(Camera &camera, RenderWindow &window)
-{
-}
-
 int main()
 {
     RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "SFML works!");
 
     setWorld();
 
-    int posX = 4;
-    int posY = 4;
+    float posX = 4;
+    float posY = 4;
 
     float dirX = 0.5f;
     float dirY = 0;
 
     float plX = 0;
-    float plY = -0.3f;
+    float plY = -0.8f;
 
     RectangleShape rect;
     rect.setSize(Vector2f(rectWidth, rectHeight));
 
     Camera camera(Vector2D(posX, posY), Vector2D(dirX, dirY), Vector2D(plX, plY));
+    camera.z = 0.5f;
 
     RectangleShape rectForFloor;
     rectForFloor.setSize(Vector2f(1, 1));
@@ -344,9 +331,7 @@ int main()
 
         window.clear();
 
-        //drawWals(camera, window);
         floorCast(camera, window, rectForFloor);
-        //drawMap(camera, rect, window);
 
         window.display();
     }
