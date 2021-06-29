@@ -48,3 +48,11 @@ struct Camera
 
 private:
 };
+
+void setWorld();
+void drawWals(Camera &camera, RenderWindow &window);
+void floorCast(Camera &camera, RenderWindow &window, RectangleShape &rect);
+Vector2D functionXY(const Vector2D &vec2D);
+Vector2D curvedVector(const Vector2D& currentPosition, const Vector2D& direction);
+
+
